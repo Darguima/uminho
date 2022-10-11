@@ -3,6 +3,8 @@
 -- que concatena duas listas.
 -- Por exemplo, (++) [1,2,3] [10,20,30] corresponde à lista [1,2,3,10,20,30].
 
+module Ex3 where
+
 (+++) :: [a] -> [a] -> [a]
 (+++) [] [] = []
 (+++) l1 [] = l1

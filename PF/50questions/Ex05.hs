@@ -2,8 +2,9 @@
 -- dada uma lista calcula uma lista com os elementos dessa lista pela ordem inversa.
 -- Por exemplo, reverse [10,20,30] corresponde a [30,20,10].
 
+-- import ex3.(+++)
+import Ex3
+
 myReverse :: [a] -> [a]
 myReverse [] = []
-myReverse (h : t) = myReverse t : h
-
-fun a b c = 0s
+myReverse (h : t) = myReverse t Ex3.+++ [h]

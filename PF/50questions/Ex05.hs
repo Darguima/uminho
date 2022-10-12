@@ -3,8 +3,8 @@
 -- Por exemplo, reverse [10,20,30] corresponde a [30,20,10].
 
 -- import ex3.(+++)
-import Ex3
+import Ex03 ( (+++) )
 
 myReverse :: [a] -> [a]
 myReverse [] = []
-myReverse (h : t) = myReverse t Ex3.+++ [h]
+myReverse (h : t) = myReverse t +++ [h]

@@ -4,6 +4,8 @@
 -- Nesse caso a lista calculada é igual à lista fornecida.
 -- Por exemplo, take 2 [10,20,30] corresponde a [10,20].
 
+module Ex06 where
+
 myTake :: Int -> [a] -> [a]
 myTake n [] = []
 myTake 0 _ = []

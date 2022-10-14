@@ -1,0 +1,4 @@
+# /bin/bash
+touch Ex$1.hs
+code Ex$1.hs
+ghci Ex$1.hs

@@ -10,20 +10,7 @@ isPrime n
   | otherwise = verifyIfIsPrime n n
 
 verifyIfIsPrime :: Int -> Int -> Bool
-
-{-
-
-n = 25
-
-2 <= m <= 5
-
-m:
-2
-3
-4
-5
-
-mod 25 m = 0
-
-
--}
+verifyIfIsPrime n m
+  | 2 > m = True
+  | 2 <= m && m^2 <= n && mod n m == 0 = False
+  | otherwise = verifyIfIsPrime n (m - 1)

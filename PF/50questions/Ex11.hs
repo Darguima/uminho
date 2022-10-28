@@ -14,3 +14,11 @@ joinSimilar num [] = [[num]]
 joinSimilar num (h : t)
   | num == head h = (num : h) : t
   | otherwise = [num] : h : t
+
+-- myGroup :: Eq a => [a] -> [[a]]
+-- myGroup [] = []
+-- myGroup [h] = [[h]]
+-- myGroup (h : t) = let a = myGroup t
+--                 in if h == head t
+--                     then (h : head a) : tail a
+--                     else [h] : a

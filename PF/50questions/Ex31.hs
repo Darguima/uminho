@@ -3,6 +3,8 @@
 -- ordenadamente esse elemento na lista.
 -- Por exemplo, insert 25 [1,20,30,40] corresponde a [1,20,25,30,40].
 
+module Ex31 where
+
 insert :: Ord a => a -> [a] -> [a]
 insert element [] = [element]
 insert element (h : t)

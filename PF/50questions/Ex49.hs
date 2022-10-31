@@ -1,0 +1,7 @@
+-- 49. Considere os seguintes tipos para representar pontos e rectângulos, respectivamente. Assuma
+-- que os rectângulos têm os lados paralelos aos eixos e são representados apenas por dois dos
+-- pontos mais afastados.
+-- type Ponto = (Float,Float)
+-- data Rectangulo = Rect Ponto Ponto
+-- Defini a função areaTotal :: [Rectangulo] -> Float que, dada uma lista com rectângulos,
+-- determina a área total que eles ocupam.

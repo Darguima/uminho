@@ -1,4 +1,6 @@
 doc/*
+dist
+dist-*
 cabal-dev
 *.o
 *.hi

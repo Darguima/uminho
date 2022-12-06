@@ -1,3 +1,5 @@
+module Ex1 where
+
 -- (a) any_ :: (a -> Bool) -> [a] -> Bool que teste se um predicado é verdade para algum elemento de uma lista;
 -- por exemplo: any_ odd [1..10] == True
 

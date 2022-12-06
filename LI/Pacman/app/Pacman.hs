@@ -1,7 +1,7 @@
 module Main where
 
 import Graphics.Gloss
-import Graphics.Gloss.Interface.Pure.Game
+import Graphics.Gloss.Interface.IO.Game
 
 windowDimensions :: (Int, Int)
 windowDimensions = (700, 700)
@@ -10,58 +10,78 @@ centerRadius :: (Int, Int)
 centerRadius = (div x 2, div y 2)
   where (x, y) = windowDimensions
 
+pacmanBmpSize :: Int
+pacmanBmpSize = 256
+
 pacmanSize :: Int
 pacmanSize = 20
 
+scalePacmanImage :: Float
+scalePacmanImage = fromIntegral pacmanSize / fromIntegral  pacmanBmpSize
+
 type Position = (Int, Int)
-data CurrentDirection = Dir_Stoped | Dir_Right | Dir_Left | Dir_Up | Dir_Down
-data WallsMode = Wall_Stop | Wall_Teletransport
+data CurrentDirection = DirStoped | DirRight | DirLeft | DirUp | DirDown
+data WallsMode = WallStop | WallTeletransport
 
-type State = (Position, CurrentDirection, WallsMode)
+type FoodPos = [Position]
 
-initialState :: State
-initialState = ((0, 0), Dir_Stoped, Wall_Stop)
+type State = (Position, CurrentDirection, WallsMode, FoodPos, [Picture])
 
-drawNewState :: State -> Picture
-drawNewState ((x, y), _, _) = translate newX newY pacman
+initialState :: [Picture] -> State
+initialState images = ((0, 0), DirStoped, WallStop, [(20, 20)], images)
+
+drawNewState :: State -> IO Picture
+drawNewState ((x, y), direction, _, foodsPos, pacmanSkin : _) = return $ Pictures (translate newX newY pacman : drawFoods foodsPos)
   where pacman :: Picture
-        pacman = color yellow $ circle 20
+        pacman = rotate (rotation direction) pacmanSkin
+
         newX = fromIntegral x
         newY = fromIntegral y
 
-reactEvent :: Event -> State -> State
-reactEvent (EventKey (SpecialKey KeyUp) Down _ _) (pos, _, wallsMode) = (pos, Dir_Up, wallsMode)
-reactEvent (EventKey (SpecialKey KeyDown) Down _ _) (pos, _, wallsMode) = (pos, Dir_Down, wallsMode)
-reactEvent (EventKey (SpecialKey KeyLeft) Down _ _) (pos, _, wallsMode) = (pos, Dir_Left, wallsMode)
-reactEvent (EventKey (SpecialKey KeyRight) Down _ _) (pos, _, wallsMode) = (pos, Dir_Right, wallsMode)
+        drawFoods :: FoodPos -> [Picture]
+        drawFoods = map (\(x, y) -> translate (fromIntegral x) (fromIntegral y) foodPosTemplate)
+        foodPosTemplate = color red $ ThickCircle 0 5
 
-reactEvent (EventKey (SpecialKey KeySpace) Down _ _) (pos, cd, Wall_Teletransport) = (pos, cd, Wall_Stop)
-reactEvent (EventKey (SpecialKey KeySpace) Down _ _) (pos, cd, Wall_Stop) = (pos, cd, Wall_Teletransport)
+        rotation :: CurrentDirection -> Float
+        rotation DirRight = 0
+        rotation DirDown = 90
+        rotation DirLeft = 180
+        rotation DirUp = 270
+        rotation _ = 0
 
-reactEvent _ s  = s
+reactEvent :: Event -> State -> IO State
+reactEvent (EventKey (SpecialKey KeyUp) Down _ _) (pos, _, wallsMode, foodsPos, i) = return (pos, DirUp, wallsMode, foodsPos, i)
+reactEvent (EventKey (SpecialKey KeyDown) Down _ _) (pos, _, wallsMode, foodsPos, i) = return (pos, DirDown, wallsMode, foodsPos, i)
+reactEvent (EventKey (SpecialKey KeyLeft) Down _ _) (pos, _, wallsMode, foodsPos, i) = return (pos, DirLeft, wallsMode, foodsPos, i)
+reactEvent (EventKey (SpecialKey KeyRight) Down _ _) (pos, _, wallsMode, foodsPos, i) = return (pos, DirRight, wallsMode, foodsPos, i)
+
+reactEvent (EventKey (SpecialKey KeySpace) Down _ _) (pos, cd, WallTeletransport, foodsPos, i) = return (pos, cd, WallStop, foodsPos, i)
+reactEvent (EventKey (SpecialKey KeySpace) Down _ _) (pos, cd, WallStop, foodsPos, i) = return (pos, cd, WallTeletransport, foodsPos, i)
+
+reactEvent _ s  = return s
 
 movePacman :: State -> State
-movePacman ((x, y), Dir_Up, wallsMode) = ((x, y + 5), Dir_Up, wallsMode)
-movePacman ((x, y), Dir_Down, wallsMode) = ((x, y - 5), Dir_Down, wallsMode)
-movePacman ((x, y), Dir_Left, wallsMode) = ((x - 5, y), Dir_Left, wallsMode)
-movePacman ((x, y), Dir_Right, wallsMode) = ((x + 5, y ), Dir_Right, wallsMode)
+movePacman ((x, y), DirUp, wallsMode, foodsPos, i) = ((x, y + 5), DirUp, wallsMode, foodsPos, i)
+movePacman ((x, y), DirDown, wallsMode, foodsPos, i) = ((x, y - 5), DirDown, wallsMode, foodsPos, i)
+movePacman ((x, y), DirLeft, wallsMode, foodsPos, i) = ((x - 5, y), DirLeft, wallsMode, foodsPos, i)
+movePacman ((x, y), DirRight, wallsMode, foodsPos, i) = ((x + 5, y ), DirRight, wallsMode, foodsPos, i)
 movePacman currentState_ = currentState_
 
-reactTime :: Float -> State -> State
-reactTime _ currentState@(_, _, Wall_Teletransport) = wallsTeletransport  (movePacman currentState)
+reactTime :: Float -> State -> IO State
+reactTime _ currentState@(_, _, WallTeletransport, foodsPos, i) = return $ wallsTeletransport  (movePacman currentState)
   where wallsTeletransport :: State -> State
-        wallsTeletransport currentState_@((x, y), cd, wallsMode)
-          | -radiusX > x = ((radiusX, y), cd, wallsMode)
-          | radiusX < x = ((-radiusX, y), cd, wallsMode)
-          | -radiusY > y = ((x, radiusY), cd, wallsMode)
-          | radiusY < y = ((x, -radiusY), cd, wallsMode)
+        wallsTeletransport currentState_@((x, y), cd, wallsMode, foodsPos, i)
+          | -radiusX > x = ((radiusX, y), cd, wallsMode, foodsPos, i)
+          | radiusX < x = ((-radiusX, y), cd, wallsMode, foodsPos, i)
+          | -radiusY > y = ((x, radiusY), cd, wallsMode, foodsPos, i)
+          | radiusY < y = ((x, -radiusY), cd, wallsMode, foodsPos, i)
           | otherwise = currentState_
 
           where (radiusX, radiusY) = centerRadius
 
-reactTime _ currentState@(_, _, Wall_Stop) = windowWalls currentState (movePacman currentState)
+reactTime _ currentState@(_, _, WallStop, _, _) = return $ windowWalls currentState (movePacman currentState)
   where windowWalls :: State -> State -> State
-        windowWalls currentState_ newState@((newX, newY), _, _)
+        windowWalls currentState_ newState@((newX, newY), _, _, _, _)
           | -radiusX + pacmanSize < newX && newX < radiusX - pacmanSize && -radiusY + pacmanSize < newY && newY < radiusY - pacmanSize = newState
           | otherwise = currentState_
           where (radiusX, radiusY) = centerRadius
@@ -76,10 +96,12 @@ dm = InWindow
        (200,200) 
 
 main :: IO ()
-main = do play dm
+main = do pacmanSkin <- loadBMP "app/images/pacman.bmp"
+          let images = [scale scalePacmanImage scalePacmanImage pacmanSkin]
+          playIO dm
               black
               fr
-              initialState
+              (initialState images)
               drawNewState
               reactEvent
               reactTime

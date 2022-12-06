@@ -50,7 +50,7 @@ soma p1 p2 = normaliza $ p1 ++ p2
 
 -- (k) produto :: Polinomio -> Polinomio -> Polinomio que calcula o produto de dois polinómios
 produto :: Polinomio -> Polinomio -> Polinomio
-produto pol1 pol2 = concatMap (`mult` pol2) pol1
-
+produto pol1 pol2 = foldr ((++) . (`mult` pol2)) [] pol1
+ 
 -- (l) equiv :: Polinomio -> Polinomio -> Bool que testa se dois polinómios são equivalentes.
 -- equiv :: Polinomio -> Polinomio -> Bool
